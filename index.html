@@ -3,133 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧊 家庭冰箱食材管理</title>
+    <title>🥦 我的冰箱 - 食材管理</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f9f9f9; }
-        h1 { text-align: center; color: #333; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        button { padding: 10px 20px; border: none; border-radius: 8px; background-color: #28a745; color: white; font-size: 16px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-        ul { list-style: none; padding: 0; }
-        li { background: white; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .delete-btn { background-color: #dc3545; padding: 5px 12px; font-size: 14px; }
-        .delete-btn:hover { background-color: #c82333; }
-        #status { margin-top: 10px; color: #666; font-size: 14px; }
-        
-        /* 配置弹窗的样式 */
-        #config-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-        }
-        #config-box {
-            background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;
-            text-align: center;
-        }
-        #config-box input { width: 100%; margin: 15px 0; }
-        #config-box button { width: 100%; }
-        .hidden { display: none !important; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; padding: 16px; padding-bottom: 80px; max-width: 600px; margin: 0 auto; }
+        h1 { font-size: 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .header-stats { color: #666; font-size: 14px; margin-bottom: 12px; }
+
+        /* 添加表单 */
+        .add-form { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .add-form input, .add-form select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+        .add-form .row { display: flex; gap: 8px; }
+        .add-form .row > * { flex: 1; }
+        .add-btn { background: #2563eb; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; width: 100%; cursor: pointer; }
+        .add-btn:hover { background: #1d4ed8; }
+        .photo-btn { background: #f3f4f6; border: 1px solid #ddd; padding: 10px; border-radius: 8px; cursor: pointer; display: block; width: 100%; text-align: center; margin-bottom: 8px; color: #333; }
+
+        /* 分类标签 */
+        .category-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; }
+        .category-tab { background: white; border: 1px solid #ddd; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .category-tab.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+        /* 食材列表 */
+        .item-card { background: white; padding: 12px 14px; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .item-info { display: flex; flex-direction: column; flex: 1; }
+        .item-name { font-weight: 500; font-size: 16px; }
+        .item-meta { font-size: 12px; color: #666; display: flex; gap: 12px; margin-top: 2px; }
+        .days-badge { font-size: 12px; padding: 2px 10px; border-radius: 12px; font-weight: 500; }
+        .days-badge.good { background: #e6f7e6; color: #16a34a; }
+        .days-badge.warning { background: #fef9c3; color: #ca8a04; }
+        .days-badge.danger { background: #fee2e2; color: #dc2626; }
+        .item-actions { display: flex; gap: 8px; align-items: center; }
+        .item-actions button { background: none; border: none; cursor: pointer; font-size: 18px; padding: 4px; }
+        .item-actions .delete-btn { color: #999; }
+        .item-actions .delete-btn:hover { color: #dc2626; }
+        .item-photo { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-left: 8px; border: 1px solid #eee; }
+
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* 拍照预览弹窗 */
+        #photo-preview-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        #photo-preview-overlay.hidden { display: none; }
+        #photo-preview-box { background: white; padding: 20px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; }
+        #photo-preview-box img { max-width: 100%; border-radius: 8px; margin-bottom: 12px; }
+        #photo-preview-box button { padding: 8px 20px; border: none; border-radius: 6px; cursor: pointer; margin: 4px; }
+        #photo-preview-box .confirm { background: #2563eb; color: white; }
+        #photo-preview-box .cancel { background: #f3f4f6; color: #333; }
     </style>
 </head>
 <body>
 
-<h1>🧊 我的冰箱</h1>
+<h1>🥦 我的冰箱</h1>
+<div class="header-stats" id="stats">0 种食材</div>
 
-<!-- 配置弹窗 -->
-<div id="config-overlay" class="hidden">
-    <div id="config-box">
-        <h3>🔑 首次配置</h3>
-        <p>请输入你的 GitHub Token，它将被保存在你的设备上，不会上传到云端。</p>
-        <input type="password" id="tokenInput" placeholder="粘贴你的 GitHub Token (ghp_xxx)">
-        <button onclick="saveToken()">保存并开始使用</button>
+<!-- 添加表单 -->
+<div class="add-form">
+    <input type="text" id="itemName" placeholder="食材名称，比如 鸡蛋">
+    <div class="row">
+        <select id="itemCategory">
+            <option value="其他">其他</option>
+            <option value="肉类">🥩 肉类</option>
+            <option value="蔬菜">🥬 蔬菜</option>
+            <option value="水果">🍎 水果</option>
+            <option value="乳制品">🧀 乳制品</option>
+            <option value="蛋类">🥚 蛋类</option>
+            <option value="饮料">🥤 饮料</option>
+            <option value="剩菜">🍱 剩菜</option>
+        </select>
+        <input type="date" id="itemExpiry">
+    </div>
+    <button class="photo-btn" onclick="triggerCamera()">📸 拍照（选填）</button>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+    <button class="add-btn" onclick="addItem()">➕ 添加食材</button>
+</div>
+
+<!-- 分类筛选 -->
+<div class="category-tabs" id="categoryTabs">
+    <div class="category-tab active" data-cat="全部">全部</div>
+    <div class="category-tab" data-cat="肉类">🥩 肉类</div>
+    <div class="category-tab" data-cat="蔬菜">🥬 蔬菜</div>
+    <div class="category-tab" data-cat="水果">🍎 水果</div>
+    <div class="category-tab" data-cat="乳制品">🧀 乳制品</div>
+    <div class="category-tab" data-cat="蛋类">🥚 蛋类</div>
+    <div class="category-tab" data-cat="饮料">🥤 饮料</div>
+    <div class="category-tab" data-cat="剩菜">🍱 剩菜</div>
+    <div class="category-tab" data-cat="其他">其他</div>
+</div>
+
+<!-- 食材列表 -->
+<div id="itemList"></div>
+<div class="empty-state" id="emptyState">
+    <div class="icon">🧊</div>
+    <div>冰箱是空的，快去添加食材吧！</div>
+</div>
+
+<!-- 拍照预览弹窗 -->
+<div id="photo-preview-overlay" class="hidden">
+    <div id="photo-preview-box">
+        <img id="previewImage" src="" alt="照片预览">
+        <div>
+            <button class="confirm" onclick="confirmPhoto()">✅ 使用这张照片</button>
+            <button class="cancel" onclick="cancelPhoto()">❌ 重拍</button>
+        </div>
     </div>
 </div>
-
-<div class="input-group">
-    <input type="text" id="itemInput" placeholder="输入食材名称，比如 鸡蛋">
-    <button onclick="addItem()">➕ 添加</button>
-</div>
-
-<ul id="fridgeList"></ul>
-
-<div id="status">🔄 正在同步数据...</div>
 
 <script>
     // ================================================================
     // 用户信息（填你自己的）
     // ================================================================
-    const GITHUB_USER = 'Yund0u0';  // 👈 注意这里是数字 0
+    const GITHUB_USER = 'Yund0u0';
     const GITHUB_REPO = 'GitHub-pages';
     const FILE_PATH = 'fridge_data.json';
     // ================================================================
 
-    // 数据容器
     let items = [];
     let GITHUB_TOKEN = null;
+    let currentCategory = '全部';
+    let pendingPhoto = null; // 暂存照片的base64
 
-    // 初始化：检查 Token，加载数据
+    // ---- 初始化 ----
     window.onload = function() {
-        // 1. 检查本地存储是否有 Token
         const savedToken = localStorage.getItem('github_fridge_token');
         if (savedToken) {
             GITHUB_TOKEN = savedToken;
             loadData();
         } else {
-            // 没有 Token，显示配置弹窗
-            document.getElementById('config-overlay').classList.remove('hidden');
-            document.getElementById('status').textContent = '⚠️ 请先配置 GitHub Token';
+            // 如果没有 Token，弹窗引导用户输入（你已经设置过Token了，这里不会出现）
+            const token = prompt('请输入你的 GitHub Token (ghp_xxx)：');
+            if (token) {
+                localStorage.setItem('github_fridge_token', token);
+                GITHUB_TOKEN = token;
+                loadData();
+            } else {
+                alert('需要 Token 才能使用同步功能');
+            }
         }
+        setupCategoryTabs();
     };
 
-    // 保存 Token 到本地存储
-    function saveToken() {
-        const token = document.getElementById('tokenInput').value.trim();
-        if (!token) {
-            alert('请输入 Token');
-            return;
-        }
-        localStorage.setItem('github_fridge_token', token);
-        GITHUB_TOKEN = token;
-        document.getElementById('config-overlay').classList.add('hidden');
-        loadData();
-    }
-
-    // ---------- 添加食材 ----------
-    function addItem() {
-        if (!GITHUB_TOKEN) return alert('请先配置 Token');
-        const input = document.getElementById('itemInput');
-        const name = input.value.trim();
-        if (name === '') return;
-
-        items.push(name);
-        input.value = '';
-        renderList();
-        saveToGitHub();
-    }
-
-    // ---------- 删除食材 ----------
-    function deleteItem(index) {
-        items.splice(index, 1);
-        renderList();
-        saveToGitHub();
-    }
-
-    // ---------- 刷新列表 UI ----------
-    function renderList() {
-        const list = document.getElementById('fridgeList');
-        list.innerHTML = '';
-        items.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span>${item}</span>
-                <button class="delete-btn" onclick="deleteItem(${index})">删除</button>
-            `;
-            list.appendChild(li);
+    // ---- 分类标签切换 ----
+    function setupCategoryTabs() {
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.cat;
+                renderList();
+            });
         });
     }
 
-    // ---------- 从 GitHub 读取数据 ----------
+    // ---- 添加食材 ----
+    function addItem() {
+        const name = document.getElementById('itemName').value.trim();
+        if (!name) { alert('请输入食材名称'); return; }
+        const category = document.getElementById('itemCategory').value;
+        const expiry = document.getElementById('itemExpiry').value;
+        if (!expiry) { alert('请选择保质期'); return; }
+
+        const newItem = {
+            id: Date.now(),
+            name: name,
+            category: category,
+            expiry: expiry,
+            photo: pendingPhoto || null,
+            createdAt: new Date().toISOString()
+        };
+        items.push(newItem);
+        pendingPhoto = null;
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemExpiry').value = '';
+        renderList();
+        saveToGitHub();
+    }
+
+    // ---- 删除食材 ----
+    function deleteItem(id) {
+        if (!confirm('确定要删除这个食材吗？')) return;
+        items = items.filter(item => item.id !== id);
+        renderList();
+        saveToGitHub();
+    }
+
+    // ---- 拍照 ----
+    function triggerCamera() {
+        document.getElementById('cameraInput').click();
+    }
+
+    function handlePhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            pendingPhoto = e.target.result;
+            // 显示预览
+            document.getElementById('previewImage').src = pendingPhoto;
+            document.getElementById('photo-preview-overlay').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+        event.target.value = ''; // 重置input
+    }
+
+    function confirmPhoto() {
+        document.getElementById('photo-preview-overlay').classList.add('hidden');
+        // 照片已暂存在 pendingPhoto，添加食材时会一起保存
+    }
+
+    function cancelPhoto() {
+        document.getElementById('photo-preview-overlay').classList.add('hidden');
+        pendingPhoto = null;
+    }
+
+    // ---- 计算剩余天数 ----
+    function getDaysUntilExpiry(expiryDate) {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const target = new Date(expiryDate);
+        target.setHours(0,0,0,0);
+        const diff = target - today;
+        return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    // ---- 渲染列表 ----
+    function renderList() {
+        let filtered = items;
+        if (currentCategory !== '全部') {
+            filtered = items.filter(item => item.category === currentCategory);
+        }
+        // 按到期日排序（快过期的在前）
+        filtered.sort((a, b) => getDaysUntilExpiry(a.expiry) - getDaysUntilExpiry(b.expiry));
+
+        const list = document.getElementById('itemList');
+        const empty = document.getElementById('emptyState');
+        const stats = document.getElementById('stats');
+
+        stats.textContent = `${items.length} 种食材`;
+
+        if (filtered.length === 0) {
+            list.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        list.innerHTML = filtered.map(item => {
+            const days = getDaysUntilExpiry(item.expiry);
+            let statusClass = 'good';
+            let statusText = `${days} 天`;
+            if (days < 0) {
+                statusClass = 'danger';
+                statusText = `过期 ${Math.abs(days)} 天`;
+            } else if (days <= 7) {
+                statusClass = 'warning';
+                statusText = `${days} 天 (即将过期)`;
+            }
+            // 分类表情
+            const emojiMap = {
+                '肉类': '🥩', '蔬菜': '🥬', '水果': '🍎', '乳制品': '🧀',
+                '蛋类': '🥚', '饮料': '🥤', '剩菜': '🍱', '其他': '📦'
+            };
+            const emoji = emojiMap[item.category] || '📦';
+            const photoHtml = item.photo ? `<img class="item-photo" src="${item.photo}" alt="食材照片">` : '';
+            return `
+                <div class="item-card">
+                    <div class="item-info">
+                        <div class="item-name">${emoji} ${item.name}</div>
+                        <div class="item-meta">
+                            <span>${item.category}</span>
+                            <span>📅 ${item.expiry}</span>
+                            <span class="days-badge ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        ${photoHtml}
+                        <button class="delete-btn" onclick="deleteItem(${item.id})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ---- 从 GitHub 读取数据 ----
     async function loadData() {
         try {
             const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
@@ -139,30 +296,24 @@
                     'Accept': 'application/vnd.github.v3+json'
                 }
             });
-
             if (response.status === 404) {
                 items = [];
                 renderList();
-                document.getElementById('status').textContent = '✅ 数据已就绪';
                 return;
             }
-
             const data = await response.json();
             const content = atob(data.content);
             items = JSON.parse(content);
             renderList();
-            document.getElementById('status').textContent = '✅ 数据同步成功';
         } catch (error) {
             console.error('加载数据失败:', error);
-            document.getElementById('status').textContent = '⚠️ 加载失败，请检查 Token';
         }
     }
 
-    // ---------- 保存数据到 GitHub ----------
+    // ---- 保存数据到 GitHub ----
     async function saveToGitHub() {
         try {
             const content = btoa(JSON.stringify(items, null, 2));
-
             let sha = null;
             const getUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
             const getResponse = await fetch(getUrl, {
@@ -175,15 +326,13 @@
                 const data = await getResponse.json();
                 sha = data.sha;
             }
-
             const body = {
                 message: '更新冰箱食材列表',
                 content: content,
                 branch: 'main'
             };
             if (sha) body.sha = sha;
-
-            const putResponse = await fetch(getUrl, {
+            await fetch(getUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${GITHUB_TOKEN}`,
@@ -192,15 +341,8 @@
                 },
                 body: JSON.stringify(body)
             });
-
-            if (putResponse.ok) {
-                document.getElementById('status').textContent = '✅ 已同步到云端';
-            } else {
-                document.getElementById('status').textContent = '❌ 保存失败，请检查 Token 权限';
-            }
         } catch (error) {
             console.error('保存出错:', error);
-            document.getElementById('status').textContent = '❌ 网络错误';
         }
     }
 </script>
