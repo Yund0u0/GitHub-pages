@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧊 家庭冰箱食材管理</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f9f9f9; }
+        h1 { text-align: center; color: #333; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { padding: 10px 20px; border: none; border-radius: 8px; background-color: #28a745; color: white; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { background-color: #dc3545; padding: 5px 12px; font-size: 14px; }
+        .delete-btn:hover { background-color: #c82333; }
+        #status { margin-top: 10px; color: #666; font-size: 14px; }
+        
+        /* 配置弹窗的样式 */
+        #config-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        #config-box {
+            background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;
+            text-align: center;
+        }
+        #config-box input { width: 100%; margin: 15px 0; }
+        #config-box button { width: 100%; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<h1>🧊 我的冰箱</h1>
+
+<!-- 配置弹窗 -->
+<div id="config-overlay" class="hidden">
+    <div id="config-box">
+        <h3>🔑 首次配置</h3>
+        <p>请输入你的 GitHub Token，它将被保存在你的设备上，不会上传到云端。</p>
+        <input type="password" id="tokenInput" placeholder="粘贴你的 GitHub Token (ghp_xxx)">
+        <button onclick="saveToken()">保存并开始使用</button>
+    </div>
+</div>
+
+<div class="input-group">
+    <input type="text" id="itemInput" placeholder="输入食材名称，比如 鸡蛋">
+    <button onclick="addItem()">➕ 添加</button>
+</div>
+
+<ul id="fridgeList"></ul>
+
+<div id="status">🔄 正在同步数据...</div>
+
+<script>
+    // ================================================================
+    // 用户信息（填你自己的）
+    // ================================================================
+    const GITHUB_USER = 'Yund0u0';
+    const GITHUB_REPO = 'GitHub-pages';
+    const FILE_PATH = 'fridge_data.json';
+    // ================================================================
+
+    // 数据容器
+    let items = [];
+    let GITHUB_TOKEN = null;
+
+    // 初始化：检查 Token，加载数据
+    window.onload = function() {
+        // 1. 检查本地存储是否有 Token
+        const savedToken = localStorage.getItem('github_fridge_token');
+        if (savedToken) {
+            GITHUB_TOKEN = savedToken;
+            loadData();
+        } else {
+            // 没有 Token，显示配置弹窗
+            document.getElementById('config-overlay').classList.remove('hidden');
+            document.getElementById('status').textContent = '⚠️ 请先配置 GitHub Token';
+        }
+    };
+
+    // 保存 Token 到本地存储
+    function saveToken() {
+        const token = document.getElementById('tokenInput').value.trim();
+        if (!token) {
+            alert('请输入 Token');
+            return;
+        }
+        localStorage.setItem('github_fridge_token', token);
+        GITHUB_TOKEN = token;
+        document.getElementById('config-overlay').classList.add('hidden');
+        loadData();
+    }
+
+    // ---------- 添加食材 ----------
+    function addItem() {
+        if (!GITHUB_TOKEN) return alert('请先配置 Token');
+        const input = document.getElementById('itemInput');
+        const name = input.value.trim();
+        if (name === '') return;
+
+        items.push(name);
+        input.value = '';
+        renderList();
+        saveToGitHub();
+    }
+
+    // ---------- 删除食材 ----------
+    function deleteItem(index) {
+        items.splice(index, 1);
+        renderList();
+        saveToGitHub();
+    }
+
+    // ---------- 刷新列表 UI ----------
+    function renderList() {
+        const list = document.getElementById('fridgeList');
+        list.innerHTML = '';
+        items.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${item}</span>
+                <button class="delete-btn" onclick="deleteItem(${index})">删除</button>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    // ---------- 从 GitHub 读取数据 ----------
+    async function loadData() {
+        try {
+            const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (response.status === 404) {
+                items = [];
+                renderList();
+                document.getElementById('status').textContent = '✅ 数据已就绪';
+                return;
+            }
+
+            const data = await response.json();
+            const content = atob(data.content);
+            items = JSON.parse(content);
+            renderList();
+            document.getElementById('status').textContent = '✅ 数据同步成功';
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            document.getElementById('status').textContent = '⚠️ 加载失败，请检查 Token';
+        }
+    }
+
+    // ---------- 保存数据到 GitHub ----------
+    async function saveToGitHub() {
+        try {
+            const content = btoa(JSON.stringify(items, null, 2));
+
+            let sha = null;
+            const getUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const getResponse = await fetch(getUrl, {
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (getResponse.status === 200) {
+                const data = await getResponse.json();
+                sha = data.sha;
+            }
+
+            const body = {
+                message: '更新冰箱食材列表',
+                content: content,
+                branch: 'main'
+            };
+            if (sha) body.sha = sha;
+
+            const putResponse = await fetch(getUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (putResponse.ok) {
+                document.getElementById('status').textContent = '✅ 已同步到云端';
+            } else {
+                document.getElementById('status').textContent = '❌ 保存失败，请检查 Token 权限';
+            }
+        } catch (error) {
+            console.error('保存出错:', error);
+            document.getElementById('status').textContent = '❌ 网络错误';
+        }
+    }
+</script>
+
+</body>
+</html>
