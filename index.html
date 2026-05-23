@@ -1,243 +1,209 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>🧊 我的冰箱</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: #f0f5ff; min-height: 100vh; padding-bottom: 80px; }
-
-  /* Header */
-  .header { background: linear-gradient(135deg,#1677ff,#4096ff); padding: 20px 16px 16px; color: #fff; }
-  .header h1 { font-size: 22px; font-weight: 700; }
-  .header p { font-size: 13px; opacity: .85; margin-top: 4px; }
-  .alert-bar { margin-top: 12px; background: rgba(255,255,255,.18); border-radius: 10px; padding: 8px 12px; font-size: 13px; display: flex; gap: 12px; }
-
-  /* Filter */
-  .filter-row { padding: 10px 12px 4px; overflow-x: auto; white-space: nowrap; }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .filter-btn { display: inline-block; margin-right: 6px; padding: 5px 12px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; background: #fff; color: #555; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-  .filter-btn.active { background: #1677ff; color: #fff; }
-
-  .sort-row { padding: 4px 16px 8px; display: flex; gap: 8px; align-items: center; }
-  .sort-label { font-size: 12px; color: #888; }
-  .sort-btn { padding: 3px 10px; border-radius: 12px; border: none; cursor: pointer; font-size: 12px; background: transparent; color: #888; }
-  .sort-btn.active { background: #e6f4ff; color: #1677ff; font-weight: 600; }
-
-  /* List */
-  .list { padding: 0 12px; }
-  .empty { text-align: center; color: #aaa; margin-top: 60px; font-size: 15px; }
-  .empty .icon { font-size: 48px; margin-bottom: 12px; }
-
-  .card { background: #fff; border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.06); display: flex; align-items: center; gap: 12px; }
-  .card-icon { font-size: 24px; }
-  .card-body { flex: 1; }
-  .card-name { font-weight: 700; font-size: 16px; color: #222; }
-  .card-meta { font-size: 12px; color: #888; margin-top: 2px; }
-  .card-tag { margin-top: 5px; display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
-  .card-del { background: #fff0f0; border: none; border-radius: 8px; padding: 6px 10px; color: #ff4d4f; cursor: pointer; font-size: 13px; font-weight: 600; }
-
-  /* FAB */
-  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 28px; background: #1677ff; color: #fff; font-size: 28px; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(22,119,255,.45); display: flex; align-items: center; justify-content: center; }
-
-  /* Modal */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; z-index: 100; }
-  .modal { background: #fff; border-radius: 20px 20px 0 0; padding: 20px 16px 32px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .modal h2 { font-weight: 700; font-size: 18px; margin-bottom: 16px; }
-  .modal label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; font-weight: 500; }
-  .modal input, .modal select { width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid #e0e0e0; font-size: 14px; margin-bottom: 10px; background: #fafafa; outline: none; font-family: inherit; }
-  .row2 { display: flex; gap: 8px; }
-  .row2 > div { flex: 1; }
-
-  .quick-btns { display: flex; gap: 6px; margin-bottom: 10px; }
-  .quick-btn { flex: 1; padding: 6px 0; border-radius: 8px; border: 1px solid #d9d9d9; background: #fafafa; color: #555; font-size: 12px; cursor: pointer; }
-  .quick-btn.active { background: #e6f4ff; color: #1677ff; border-color: #91caff; font-weight: 700; }
-
-  .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
-  .btn-cancel { flex: 1; padding: 12px 0; border-radius: 12px; border: 1px solid #d9d9d9; background: #fff; color: #555; font-size: 15px; cursor: pointer; }
-  .btn-add { flex: 2; padding: 12px 0; border-radius: 12px; border: none; background: #1677ff; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; }
-
-  .hidden { display: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧊 家庭冰箱食材管理</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f9f9f9; }
+        h1 { text-align: center; color: #333; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        button { padding: 10px 20px; border: none; border-radius: 8px; background-color: #28a745; color: white; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { background-color: #dc3545; padding: 5px 12px; font-size: 14px; }
+        .delete-btn:hover { background-color: #c82333; }
+        #status { margin-top: 10px; color: #666; font-size: 14px; }
+        
+        /* 配置弹窗的样式 */
+        #config-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        #config-box {
+            background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%;
+            text-align: center;
+        }
+        #config-box input { width: 100%; margin: 15px 0; }
+        #config-box button { width: 100%; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>🧊 我的冰箱</h1>
-  <p id="count-text">0 种食材</p>
-  <div class="alert-bar hidden" id="alert-bar"></div>
+<h1>🧊 我的冰箱</h1>
+
+<!-- 配置弹窗 -->
+<div id="config-overlay" class="hidden">
+    <div id="config-box">
+        <h3>🔑 首次配置</h3>
+        <p>请输入你的 GitHub Token，它将被保存在你的设备上，不会上传到云端。</p>
+        <input type="password" id="tokenInput" placeholder="粘贴你的 GitHub Token (ghp_xxx)">
+        <button onclick="saveToken()">保存并开始使用</button>
+    </div>
 </div>
 
-<div class="filter-row" id="filter-row"></div>
-<div class="sort-row">
-  <span class="sort-label">排序：</span>
-  <button class="sort-btn active" onclick="setSort('expiry')">按到期</button>
-  <button class="sort-btn" onclick="setSort('name')">按名称</button>
+<div class="input-group">
+    <input type="text" id="itemInput" placeholder="输入食材名称，比如 鸡蛋">
+    <button onclick="addItem()">➕ 添加</button>
 </div>
 
-<div class="list" id="list"></div>
+<ul id="fridgeList"></ul>
 
-<button class="fab" onclick="openForm()">＋</button>
-
-<div class="overlay hidden" id="overlay">
-  <div class="modal">
-    <h2>➕ 添加食材</h2>
-    <label>食材名称</label>
-    <input id="f-name" placeholder="例：牛奶、鸡蛋、苹果…" />
-    <label>分类</label>
-    <select id="f-cat"></select>
-    <div class="row2">
-      <div><label>数量</label><input id="f-qty" type="number" min="1" value="1" /></div>
-      <div><label>单位</label>
-        <select id="f-unit">
-          <option>个</option><option>克</option><option>千克</option>
-          <option>升</option><option>毫升</option><option>袋</option>
-          <option>盒</option><option>瓶</option><option>份</option>
-        </select>
-      </div>
-    </div>
-    <label>存入日期</label>
-    <input id="f-added" type="date" />
-    <label>到期日期</label>
-    <div class="quick-btns" id="quick-btns">
-      <button class="quick-btn" onclick="setQuick(3,'3天')">3天</button>
-      <button class="quick-btn" onclick="setQuick(7,'1周')">1周</button>
-      <button class="quick-btn" onclick="setQuick(14,'2周')">2周</button>
-      <button class="quick-btn" onclick="setQuick(30,'1月')">1月</button>
-    </div>
-    <input id="f-expiry" type="date" onchange="clearQuick()" />
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeForm()">取消</button>
-      <button class="btn-add" onclick="addItem()">添加到冰箱</button>
-    </div>
-  </div>
-</div>
+<div id="status">🔄 正在同步数据...</div>
 
 <script>
-const CATS = ["🥩 肉类","🥦 蔬菜","🍎 水果","🥛 乳制品","🥚 蛋类","🧃 饮料","🍱 剩菜","🧊 其他"];
-let items = JSON.parse(localStorage.getItem("fridge") || "[]");
-let curFilter = "全部";
-let curSort = "expiry";
+    // ================================================================
+    // 用户信息（填你自己的）
+    // ================================================================
+    const GITHUB_USER = 'Yund0u0';
+    const GITHUB_REPO = 'GitHub-pages';
+    const FILE_PATH = 'fridge_data.json';
+    // ================================================================
 
-function saveItems() { localStorage.setItem("fridge", JSON.stringify(items)); }
-function today() { return new Date().toISOString().split("T")[0]; }
-function addDays(n) { const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().split("T")[0]; }
-function daysUntil(s) { const t=new Date(); t.setHours(0,0,0,0); const e=new Date(s); e.setHours(0,0,0,0); return Math.ceil((e-t)/86400000); }
-function statusInfo(d) {
-  if (d<0) return {label:"已过期",color:"#ff4d4f",bg:"#fff1f0",dot:"🔴"};
-  if (d===0) return {label:"今天到期",color:"#fa8c16",bg:"#fff7e6",dot:"🟠"};
-  if (d<=3) return {label:d+"天后到期",color:"#faad14",bg:"#fffbe6",dot:"🟡"};
-  return {label:d+"天后到期",color:"#52c41a",bg:"#f6ffed",dot:"🟢"};
-}
+    // 数据容器
+    let items = [];
+    let GITHUB_TOKEN = null;
 
-// Init category select & filter
-(function init() {
-  const sel = document.getElementById("f-cat");
-  CATS.forEach(c => { const o=document.createElement("option"); o.textContent=c; sel.appendChild(o); });
-  sel.value = CATS[7];
-  document.getElementById("f-added").value = today();
-  document.getElementById("f-expiry").value = addDays(7);
-  renderFilters();
-  renderList();
-})();
+    // 初始化：检查 Token，加载数据
+    window.onload = function() {
+        // 1. 检查本地存储是否有 Token
+        const savedToken = localStorage.getItem('github_fridge_token');
+        if (savedToken) {
+            GITHUB_TOKEN = savedToken;
+            loadData();
+        } else {
+            // 没有 Token，显示配置弹窗
+            document.getElementById('config-overlay').classList.remove('hidden');
+            document.getElementById('status').textContent = '⚠️ 请先配置 GitHub Token';
+        }
+    };
 
-function renderFilters() {
-  const row = document.getElementById("filter-row");
-  row.innerHTML = "";
-  ["全部",...CATS].forEach(c => {
-    const b = document.createElement("button");
-    b.className = "filter-btn" + (c===curFilter?" active":"");
-    b.textContent = c;
-    b.onclick = () => { curFilter=c; renderFilters(); renderList(); };
-    row.appendChild(b);
-  });
-}
+    // 保存 Token 到本地存储
+    function saveToken() {
+        const token = document.getElementById('tokenInput').value.trim();
+        if (!token) {
+            alert('请输入 Token');
+            return;
+        }
+        localStorage.setItem('github_fridge_token', token);
+        GITHUB_TOKEN = token;
+        document.getElementById('config-overlay').classList.add('hidden');
+        loadData();
+    }
 
-function setSort(v) {
-  curSort = v;
-  document.querySelectorAll(".sort-btn").forEach((b,i) => b.classList.toggle("active", (i===0&&v==="expiry")||(i===1&&v==="name")));
-  renderList();
-}
+    // ---------- 添加食材 ----------
+    function addItem() {
+        if (!GITHUB_TOKEN) return alert('请先配置 Token');
+        const input = document.getElementById('itemInput');
+        const name = input.value.trim();
+        if (name === '') return;
 
-function renderList() {
-  const list = document.getElementById("list");
-  let data = items.filter(i => curFilter==="全部" || i.category===curFilter);
-  data.sort((a,b) => curSort==="expiry" ? new Date(a.expiryDate)-new Date(b.expiryDate) : a.name.localeCompare(b.name,"zh"));
+        items.push(name);
+        input.value = '';
+        renderList();
+        saveToGitHub();
+    }
 
-  document.getElementById("count-text").textContent = items.length + " 种食材";
+    // ---------- 删除食材 ----------
+    function deleteItem(index) {
+        items.splice(index, 1);
+        renderList();
+        saveToGitHub();
+    }
 
-  const expired = items.filter(i=>daysUntil(i.expiryDate)<0).length;
-  const soon = items.filter(i=>{const d=daysUntil(i.expiryDate);return d>=0&&d<=3;}).length;
-  const ab = document.getElementById("alert-bar");
-  if (expired>0||soon>0) {
-    ab.classList.remove("hidden");
-    ab.innerHTML = (expired>0?"<span>🔴 "+expired+" 种已过期</span>":"") + (soon>0?"<span>🟡 "+soon+" 种即将到期</span>":"");
-  } else ab.classList.add("hidden");
+    // ---------- 刷新列表 UI ----------
+    function renderList() {
+        const list = document.getElementById('fridgeList');
+        list.innerHTML = '';
+        items.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>${item}</span>
+                <button class="delete-btn" onclick="deleteItem(${index})">删除</button>
+            `;
+            list.appendChild(li);
+        });
+    }
 
-  if (data.length===0) {
-    list.innerHTML = '<div class="empty"><div class="icon">🧊</div>冰箱是空的，快去添加食材吧！</div>';
-    return;
-  }
-  list.innerHTML = data.map(item => {
-    const d = daysUntil(item.expiryDate);
-    const s = statusInfo(d);
-    const emoji = item.category.split(" ")[0];
-    const catName = item.category.split(" ")[1]||item.category;
-    return `<div class="card" style="border-left:4px solid ${s.color}">
-      <div class="card-icon">${emoji}</div>
-      <div class="card-body">
-        <div class="card-name">${item.name}</div>
-        <div class="card-meta">${item.qty}${item.unit} · ${catName} · 存入 ${item.addedDate}</div>
-        <div class="card-tag" style="background:${s.bg};color:${s.color}">${s.dot} ${s.label}（${item.expiryDate}）</div>
-      </div>
-      <button class="card-del" onclick="removeItem(${item.id})">删除</button>
-    </div>`;
-  }).join("");
-}
+    // ---------- 从 GitHub 读取数据 ----------
+    async function loadData() {
+        try {
+            const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
 
-function removeItem(id) {
-  if (confirm("确认删除这个食材？")) {
-    items = items.filter(i=>i.id!==id);
-    saveItems(); renderList();
-  }
-}
+            if (response.status === 404) {
+                items = [];
+                renderList();
+                document.getElementById('status').textContent = '✅ 数据已就绪';
+                return;
+            }
 
-function openForm() { document.getElementById("overlay").classList.remove("hidden"); }
-function closeForm() { document.getElementById("overlay").classList.add("hidden"); }
+            const data = await response.json();
+            const content = atob(data.content);
+            items = JSON.parse(content);
+            renderList();
+            document.getElementById('status').textContent = '✅ 数据同步成功';
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            document.getElementById('status').textContent = '⚠️ 加载失败，请检查 Token';
+        }
+    }
 
-function setQuick(n, label) {
-  document.getElementById("f-expiry").value = addDays(n);
-  document.querySelectorAll(".quick-btn").forEach(b => b.classList.toggle("active", b.textContent===label));
-}
-function clearQuick() { document.querySelectorAll(".quick-btn").forEach(b=>b.classList.remove("active")); }
+    // ---------- 保存数据到 GitHub ----------
+    async function saveToGitHub() {
+        try {
+            const content = btoa(JSON.stringify(items, null, 2));
 
-function addItem() {
-  const name = document.getElementById("f-name").value.trim();
-  const expiry = document.getElementById("f-expiry").value;
-  if (!name) { alert("请输入食材名称"); return; }
-  if (!expiry) { alert("请选择到期日期"); return; }
-  items.push({
-    id: Date.now(),
-    name,
-    category: document.getElementById("f-cat").value,
-    qty: document.getElementById("f-qty").value || "1",
-    unit: document.getElementById("f-unit").value,
-    addedDate: document.getElementById("f-added").value || today(),
-    expiryDate: expiry
-  });
-  saveItems(); renderList(); closeForm();
-  // reset
-  document.getElementById("f-name").value = "";
-  document.getElementById("f-qty").value = "1";
-  document.getElementById("f-added").value = today();
-  document.getElementById("f-expiry").value = addDays(7);
-  document.getElementById("f-cat").value = CATS[7];
-  clearQuick();
-}
+            let sha = null;
+            const getUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
+            const getResponse = await fetch(getUrl, {
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (getResponse.status === 200) {
+                const data = await getResponse.json();
+                sha = data.sha;
+            }
 
-// close overlay on background click
-document.getElementById("overlay").addEventListener("click", function(e){ if(e.target===this) closeForm(); });
+            const body = {
+                message: '更新冰箱食材列表',
+                content: content,
+                branch: 'main'
+            };
+            if (sha) body.sha = sha;
+
+            const putResponse = await fetch(getUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (putResponse.ok) {
+                document.getElementById('status').textContent = '✅ 已同步到云端';
+            } else {
+                document.getElementById('status').textContent = '❌ 保存失败，请检查 Token 权限';
+            }
+        } catch (error) {
+            console.error('保存出错:', error);
+            document.getElementById('status').textContent = '❌ 网络错误';
+        }
+    }
 </script>
+
 </body>
 </html>
